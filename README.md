@@ -83,6 +83,7 @@ All technical documentation is organized in the [doc/](file:///e:/java_compare_c
 | [testing.md](file:///e:/java_compare_classes_project/doc/testing.md) | Testing strategy, JUnit 5 unit tests, and performance benchmarks. |
 | [security.md](file:///e:/java_compare_classes_project/doc/security.md) | Security posture, offline privacy, memory limits, and file access safeguards. |
 | [Agents.md](file:///e:/java_compare_classes_project/doc/Agents.md) | AI coding agent protocols, development guidelines, and context maps. |
+| [memory.md](file:///e:/java_compare_classes_project/doc/memory.md) | Living project memory, component map, domain models, and key mechanics. |
 | [documentation-audit.md](file:///e:/java_compare_classes_project/doc/documentation-audit.md) | Documentation audit tracking matrix and review status. |
 
 ---

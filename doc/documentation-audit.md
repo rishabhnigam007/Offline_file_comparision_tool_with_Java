@@ -18,6 +18,7 @@ This matrix tracks the completeness and review status of all documentation files
 | **`testing.md`** | [`doc/testing.md`](file:///e:/java_compare_classes_project/doc/testing.md) | Testing strategy, test cases, and JUnit 5 test matrix. | ✅ Verified |
 | **`security.md`** | [`doc/security.md`](file:///e:/java_compare_classes_project/doc/security.md) | 100% offline privacy, read-only file access, XSS sanitization. | ✅ Verified |
 | **`Agents.md`** | [`doc/Agents.md`](file:///e:/java_compare_classes_project/doc/Agents.md) | AI agent handbook, rules, anti-pattern avoidance, Maven commands. | ✅ Verified |
+| **`memory.md`** | [`doc/memory.md`](file:///e:/java_compare_classes_project/doc/memory.md) | Living project memory, system architecture, core mechanics, and patterns. | ✅ Verified |
 | **`documentation-audit.md`** | [`doc/documentation-audit.md`](file:///e:/java_compare_classes_project/doc/documentation-audit.md) | Central audit matrix and review tracking. | ✅ Verified |
 
 ---
