@@ -1,5 +1,7 @@
 package com.javacompare.ui;
 
+import com.javacompare.ui.neobrutalism.NeoBrutalistTheme;
+
 import javax.swing.*;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
@@ -16,22 +18,11 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
 /**
- * Clean Git/IDE-style line number gutter component for JTextArea in JScrollPane.
- * Displays line numbers in normal text mode matching the visual diff mode's aesthetic.
- * Automatically handles font matching, dynamic width resizing, soft word-wrapping,
- * mouse-click cursor jumping, and high-contrast Light/Dark theme rendering.
+ * Neo-Brutalist line number gutter component for JTextArea in JScrollPane.
+ * Solid black divider outline, high-contrast monospace typography,
+ * and automatic theme synchronization.
  */
 public class TextLineNumberPanel extends JComponent implements DocumentListener, CaretListener, PropertyChangeListener {
-
-    public static final Color LIGHT_GUTTER_BG = new Color(246, 248, 250);
-    public static final Color LIGHT_GUTTER_TEXT = new Color(110, 119, 129);
-    public static final Color LIGHT_CURRENT_TEXT = new Color(31, 35, 40);
-    public static final Color LIGHT_BORDER = new Color(208, 215, 222);
-
-    public static final Color DARK_GUTTER_BG = new Color(22, 27, 34);
-    public static final Color DARK_GUTTER_TEXT = new Color(139, 148, 158);
-    public static final Color DARK_CURRENT_TEXT = new Color(240, 246, 252);
-    public static final Color DARK_BORDER = new Color(48, 54, 61);
 
     private final JTextArea textArea;
     private boolean isDarkTheme = false;
@@ -47,13 +38,11 @@ public class TextLineNumberPanel extends JComponent implements DocumentListener,
         Font textFont = textArea.getFont();
         setFont(textFont != null ? textFont : new Font(Font.MONOSPACED, Font.PLAIN, 12));
 
-        // Listen for document changes to update line count and width
         textArea.getDocument().addDocumentListener(this);
         textArea.addCaretListener(this);
         textArea.addPropertyChangeListener("font", this);
         textArea.addPropertyChangeListener("document", this);
 
-        // Listen for resizing (important for line wrapping)
         textArea.addComponentListener(new ComponentAdapter() {
             @Override
             public void componentResized(ComponentEvent e) {
@@ -62,7 +51,6 @@ public class TextLineNumberPanel extends JComponent implements DocumentListener,
             }
         });
 
-        // Click on a line number to jump caret to that line
         addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
@@ -78,6 +66,7 @@ public class TextLineNumberPanel extends JComponent implements DocumentListener,
             }
         });
 
+        NeoBrutalistTheme.addThemeChangeListener(this::repaint);
         updateWidth();
     }
 
@@ -104,7 +93,7 @@ public class TextLineNumberPanel extends JComponent implements DocumentListener,
         Font font = getFont();
         FontMetrics fm = getFontMetrics(font != null ? font : textArea.getFont());
         int charW = fm.charWidth('9');
-        int width = Math.max(48, digits * charW + 24);
+        int width = Math.max(52, digits * charW + 24);
         int height = Math.max(textArea.getHeight(), 200);
 
         return new Dimension(width, height);
@@ -119,14 +108,15 @@ public class TextLineNumberPanel extends JComponent implements DocumentListener,
         int w = getWidth();
         int h = getHeight();
 
-        // 1. Fill background
-        Color bg = isDarkTheme ? DARK_GUTTER_BG : LIGHT_GUTTER_BG;
+        // 1. Fill gutter background
+        Color bg = NeoBrutalistTheme.surfaceAlt();
         g2.setColor(bg);
         g2.fillRect(0, 0, w, h);
 
-        // 2. Draw 1px vertical border separator on right edge
-        Color borderCol = isDarkTheme ? DARK_BORDER : LIGHT_BORDER;
+        // 2. Bold 2px vertical divider line on right edge
+        Color borderCol = NeoBrutalistTheme.border();
         g2.setColor(borderCol);
+        g2.setStroke(new BasicStroke(2.0f));
         g2.drawLine(w - 1, 0, w - 1, h);
 
         // 3. Determine visible clip
@@ -152,7 +142,6 @@ public class TextLineNumberPanel extends JComponent implements DocumentListener,
             caretLine = textArea.getLineOfOffset(textArea.getCaretPosition());
         } catch (Exception ignored) {}
 
-        // Find visible line range in clip
         int startLine = 0;
         int endLine = totalLines - 1;
 
@@ -170,8 +159,8 @@ public class TextLineNumberPanel extends JComponent implements DocumentListener,
             endLine = totalLines - 1;
         }
 
-        Color normalFg = isDarkTheme ? DARK_GUTTER_TEXT : LIGHT_GUTTER_TEXT;
-        Color currentLineFg = isDarkTheme ? DARK_CURRENT_TEXT : LIGHT_CURRENT_TEXT;
+        Color normalFg = NeoBrutalistTheme.textMuted();
+        Color currentLineFg = NeoBrutalistTheme.textPrimary();
 
         Insets insets = textArea.getInsets();
         int topInset = (insets != null) ? insets.top : 0;
@@ -191,7 +180,7 @@ public class TextLineNumberPanel extends JComponent implements DocumentListener,
 
                 int textY = y + fm.getAscent();
                 String numStr = String.valueOf(line + 1);
-                int numX = w - 12 - fm.stringWidth(numStr);
+                int numX = w - 14 - fm.stringWidth(numStr);
 
                 if (line == caretLine) {
                     g2.setColor(currentLineFg);
@@ -202,14 +191,11 @@ public class TextLineNumberPanel extends JComponent implements DocumentListener,
                 }
 
                 g2.drawString(numStr, numX, textY);
-            } catch (BadLocationException ignored) {
-            }
+            } catch (BadLocationException ignored) {}
         }
 
         g2.dispose();
     }
-
-    // --- DocumentListener & CaretListener ---
 
     @Override
     public void insertUpdate(DocumentEvent e) {

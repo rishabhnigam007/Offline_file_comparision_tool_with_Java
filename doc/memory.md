@@ -11,7 +11,7 @@
 
 ## 1. Executive Summary & Purpose
 
-The **Offline Java Compare Tool** is a high-performance, distraction-free desktop application for parallel side-by-side file and text comparison. It is engineered with **Java 21 LTS**, **Java Swing**, and **FlatLaf 3.5.4**, adhering strictly to high-contrast **Pure White** and **Pure Black** themes (zero muddy gray backgrounds).
+The **Offline Java Compare Tool** is a high-performance, distraction-free desktop application for parallel side-by-side file and text comparison. It is engineered with **Java 21 LTS**, **Java Swing**, and **FlatLaf 3.5.4**, featuring a high-contrast **Neo-Brutalist** design system with bold 2px solid black borders, hard offset drop shadows (zero blur), saturated color blocking (Electric Yellow, Lime Green, Pink-Red, Cyan), and physical tactile buttons.
 
 ### Core Pillars
 1. **100% Offline & Private:** Zero network calls, zero telemetry, zero external dependencies at runtime. Runs entirely inside local JVM memory.
@@ -84,7 +84,7 @@ graph TD
 
 ```
 src/main/java/com/javacompare/
-├── App.java                              # Main entry point; enables high-DPI & loads FlatLaf
+├── App.java                              # Main entry point; initializes High-DPI & Neo-Brutalist Look and Feel
 ├── diff/
 │   ├── DiffService.java                  # Myers diff execution, row alignment, unchanged folding
 │   └── WordDiffCalculator.java           # Tokenization & LCS intra-line character/word badges
@@ -95,14 +95,22 @@ src/main/java/com/javacompare/
 │   ├── DiffType.java                     # Diff classification enum (EQUAL, INSERT, DELETE, CHANGE, SPACER)
 │   └── TextSpan.java                     # Sub-string span record for word/token highlighting
 ├── ui/
-│   ├── DiffMiniMap.java                  # Right-side overview bar with color ticks and jump navigation
-│   ├── DiffViewPanel.java                # Dual JTable visual diff viewer with Git-style gutters & gaps
-│   ├── MainWindow.java                   # Primary application frame, toolbar controls, CardLayout switch
+│   ├── DiffMiniMap.java                  # Right-side overview bar with hard shadow and slider thumb
+│   ├── DiffViewPanel.java                # Dual JTable visual diff viewer with Git-style gutters & Neo-Brutalist cards
+│   ├── MainWindow.java                   # Primary frame, Neo-Brutalist header/toolbar dock, CardLayout switch
 │   ├── ScrollSyncCoordinator.java        # Bidirectional scroll synchronization with recursion locks
-│   └── TextLineNumberPanel.java          # Smart JTextArea row gutter for normal text edit mode
+│   ├── TextLineNumberPanel.java          # Smart JTextArea row gutter with 2px solid divider border
+│   └── neobrutalism/
+│       ├── NeoBrutalistBadge.java        # Status & count badge with 2px border and hard drop shadow
+│       ├── NeoBrutalistButton.java       # Tactile button (mechanical shift on click, zero-blur shadow)
+│       ├── NeoBrutalistPanel.java        # Container card with 2px border and 4px offset shadow
+│       ├── NeoBrutalistScrollBarUI.java  # High-contrast scrollbar with solid borders and colored thumb
+│       ├── NeoBrutalistTheme.java        # Global palette manager (Retro Light & Cyber Dark) and listeners
+│       ├── NeoBrutalistToggle.java       # Chunky switch toggle with sliding thumb and Electric Yellow fill
+│       └── NeoBrutalistUtils.java        # Java 2D hard shadow, border outline, and card renderers
 └── util/
     ├── FileLoader.java                   # File reader with UTF-8 / UTF-16 BOM detection & stripping
-    └── ReportExporter.java               # Standalone HTML report generator with XSS sanitization
+    └── ReportExporter.java               # Standalone Neo-Brutalist HTML report generator with XSS sanitization
 ```
 
 ---
@@ -174,19 +182,22 @@ All models are defined as Java 21 **records** to ensure thread safety and immuta
 
 Defined in [`doc/design_system.md`](file:///e:/java_compare_classes_project/doc/design_system.md):
 
-| Semantic Token | Pure White Theme (Light) | Pure Black Theme (Dark) |
-| :--- | :--- | :--- |
-| **Window & Table Background** | `#ffffff` | `#000000` / `#0d1117` |
-| **Gutter Background** | `#f6f8fa` | `#161b22` |
-| **Border / Divider** | `#d0d7de` | `#30363d` |
-| **Identical Text** | `#1f2328` | `#c9d1d9` |
-| **Insertion Background** | `#e6ffec` | `#112a1a` |
-| **Insertion Intra-Line Badge** | `#abf2bc` | `#236233` |
-| **Insertion Gutter Accent** | `#1a7f37` (`+`) | `#3fb950` (`+`) |
-| **Deletion Background** | `#ffebe9` | `#3a1014` |
-| **Deletion Intra-Line Badge** | `#ffc1ba` | `#7e2226` |
-| **Deletion Gutter Accent** | `#cf222e` (`-`) | `#f85149` (`-`) |
-| **Gap / Spacer Pattern** | `#f6f8fa` + `#dadee3` diagonal stripes | `#161b22` + `#30363d` diagonal stripes |
+| Semantic Token | Light Neo-Brutalism | Cyber Dark Neo-Brutalism | Application |
+| :--- | :--- | :--- | :--- |
+| **Canvas Background** | `#fdfaf3` (Warm Retro Cream) | `#141416` (Deep Obsidian) | Main window backdrop |
+| **Surface Card** | `#ffffff` (Stark White) | `#1e1e22` (Card Dark) | Editor panes & container cards |
+| **Surface Alt / Gutter** | `#f5f1e9` | `#282830` | Header strips & line gutters |
+| **Solid Border Outline** | `#000000` (Solid 2px Black) | `#ffffff` / `#000000` | Bold border strokes |
+| **Hard Offset Drop Shadow** | `#000000` (Zero Blur) | `#000000` | Hard offset drop shadow (3-4px) |
+| **Electric Yellow Accent** | `#ffe600` | `#ffe600` | Theme toggle & selection highlight |
+| **Vibrant Lime Accent** | `#00f076` | `#00f076` | Compare button (`⚡`) & additions |
+| **Electric Pink-Red Accent** | `#ff4365` | `#ff4365` | Reset button (`🔄`) & deletions |
+| **Electric Blue Accent** | `#38b6ff` | `#38b6ff` | Visual diff toggle & informational |
+| **Insertion Background** | `#e6fce8` | `#0c2c16` | Full row background for added lines |
+| **Insertion Word Badge** | `#00f076` + 1px outline | `#00b455` | Intra-line added token badge |
+| **Deletion Background** | `#ffebee` | `#370e16` | Full row background for deleted lines |
+| **Deletion Word Badge** | `#ff4365` + 1px outline | `#be1e3c` | Intra-line deleted token badge |
+| **Gap / Spacer Pattern** | `#f2f2f2` + `#bebebe` stripes | `#18181c` + `#323238` stripes | Opposing virtual alignment spacers |
 
 ---
 

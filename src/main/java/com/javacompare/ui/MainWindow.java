@@ -6,6 +6,12 @@ import com.formdev.flatlaf.FlatLightLaf;
 import com.javacompare.diff.DiffService;
 import com.javacompare.model.DiffOptions;
 import com.javacompare.model.DiffResult;
+import com.javacompare.ui.neobrutalism.NeoBrutalistBadge;
+import com.javacompare.ui.neobrutalism.NeoBrutalistButton;
+import com.javacompare.ui.neobrutalism.NeoBrutalistPanel;
+import com.javacompare.ui.neobrutalism.NeoBrutalistScrollBarUI;
+import com.javacompare.ui.neobrutalism.NeoBrutalistTheme;
+import com.javacompare.ui.neobrutalism.NeoBrutalistToggle;
 import com.javacompare.util.FileLoader;
 import com.javacompare.util.ReportExporter;
 import org.slf4j.Logger;
@@ -13,15 +19,16 @@ import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import javax.swing.border.LineBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import java.awt.*;
 import java.io.File;
 
 /**
- * Main application window for Offline Java Compare Tool desktop tool.
- * High-contrast Pure White / Pure Black design with clear icons and logging.
+ * Main application window for Offline Java Compare Tool.
+ * Engineered with the Neo-Brutalist design system: bold solid black borders,
+ * hard offset drop shadows (zero blur), punchy saturated color blocks, and
+ * mechanical tactile buttons.
  */
 public class MainWindow extends JFrame {
 
@@ -36,31 +43,41 @@ public class MainWindow extends JFrame {
     // Edit Mode Components
     private final JTextArea leftTextArea = new JTextArea();
     private final JTextArea rightTextArea = new JTextArea();
-    private final JLabel leftFileLabel = new JLabel("📄 Original (Left) - Paste text or drop file");
-    private final JLabel rightFileLabel = new JLabel("📄 Modified (Right) - Paste text or drop file");
+    private final JLabel leftFileLabel = new JLabel("🫲 ORIGINAL (LEFT) - Paste text or drop file");
+    private final JLabel rightFileLabel = new JLabel("🫱 MODIFIED (RIGHT) - Paste text or drop file");
     private final JScrollPane leftEditorScrollPane;
     private final JScrollPane rightEditorScrollPane;
     private final TextLineNumberPanel leftLineNumberGutter;
     private final TextLineNumberPanel rightLineNumberGutter;
 
+    private NeoBrutalistPanel leftEditorCard;
+    private NeoBrutalistPanel rightEditorCard;
+    private NeoBrutalistPanel headerPanel;
+    private NeoBrutalistPanel bottomToolbar;
+
     // Diff View Component
     private final DiffViewPanel diffViewPanel = new DiffViewPanel();
 
-    // Option Controls (Word wrap and Trim Lines checked by default)
-    private final JCheckBox wordWrapToggle = new JCheckBox("Word wrap", true);
-    private final JCheckBox hideUnchangedToggle = new JCheckBox("Hide Unchanged", false);
-    private final JCheckBox trimLinesToggle = new JCheckBox("Trim Lines", true);
-    private final JCheckBox ignoreCaseToggle = new JCheckBox("Ignore Case", false);
+    // Neo-Brutalist Option Toggles
+    private final NeoBrutalistToggle wordWrapToggle = new NeoBrutalistToggle("Word wrap", true);
+    private final NeoBrutalistToggle hideUnchangedToggle = new NeoBrutalistToggle("Hide Unchanged", false);
+    private final NeoBrutalistToggle trimLinesToggle = new NeoBrutalistToggle("Trim Lines", true);
+    private final NeoBrutalistToggle ignoreCaseToggle = new NeoBrutalistToggle("Ignore Case", false);
 
-    // Navigation & Status
-    private final JButton prevButton = new JButton("◀ PREVIOUS");
-    private final JButton nextButton = new JButton("NEXT ▶");
-    private final JLabel diffStatusLabel = new JLabel("0 diffs");
-    private final JButton modeToggleButton = new JButton("🔍 Visual Diff View");
+    // Navigation & Action Controls
+    private final NeoBrutalistButton prevButton = new NeoBrutalistButton("⏮️ PREV",
+            NeoBrutalistButton.ButtonStyle.DEFAULT);
+    private final NeoBrutalistButton nextButton = new NeoBrutalistButton("NEXT ⏭️",
+            NeoBrutalistButton.ButtonStyle.DEFAULT);
+    private final NeoBrutalistBadge diffStatusBadge = new NeoBrutalistBadge("0 diffs",
+            NeoBrutalistBadge.BadgeType.NEUTRAL);
+    private final NeoBrutalistButton modeToggleButton = new NeoBrutalistButton("🔍 Visual Diff View",
+            NeoBrutalistButton.ButtonStyle.PRIMARY);
+    private final NeoBrutalistButton compareBtn = new NeoBrutalistButton("⚡ COMPARE",
+            NeoBrutalistButton.ButtonStyle.SUCCESS);
 
     private DiffResult currentDiffResult = DiffResult.empty();
     private int currentDiffNavigationIndex = -1;
-    private boolean isDarkMode = false;
     private boolean isDiffViewActive = false;
 
     private String leftFileName = "Original";
@@ -68,11 +85,11 @@ public class MainWindow extends JFrame {
 
     public MainWindow() {
         super("Offline Java Compare Tool");
-        log.info("Initializing MainWindow UI components...");
+        log.info("Initializing Neo-Brutalist MainWindow UI...");
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(1220, 800);
-        setMinimumSize(new Dimension(920, 620));
+        setSize(1240, 820);
+        setMinimumSize(new Dimension(940, 640));
         setLocationRelativeTo(null);
 
         Font codeFont = new Font("JetBrains Mono", Font.PLAIN, 13);
@@ -84,80 +101,99 @@ public class MainWindow extends JFrame {
         leftTextArea.setTabSize(4);
         leftTextArea.setLineWrap(true);
         leftTextArea.setWrapStyleWord(true);
-        leftTextArea.setMargin(new Insets(4, 6, 4, 6));
+        leftTextArea.setMargin(new Insets(6, 8, 6, 8));
+        leftTextArea.setBorder(BorderFactory.createEmptyBorder());
 
         rightTextArea.setFont(codeFont);
         rightTextArea.setTabSize(4);
         rightTextArea.setLineWrap(true);
         rightTextArea.setWrapStyleWord(true);
-        rightTextArea.setMargin(new Insets(4, 6, 4, 6));
+        rightTextArea.setMargin(new Insets(6, 8, 6, 8));
+        rightTextArea.setBorder(BorderFactory.createEmptyBorder());
 
         leftLineNumberGutter = new TextLineNumberPanel(leftTextArea);
         rightLineNumberGutter = new TextLineNumberPanel(rightTextArea);
 
         leftEditorScrollPane = new JScrollPane(leftTextArea);
+        leftEditorScrollPane.setBorder(BorderFactory.createEmptyBorder());
         leftEditorScrollPane.setRowHeaderView(leftLineNumberGutter);
+        leftEditorScrollPane.getVerticalScrollBar().setUI(new NeoBrutalistScrollBarUI());
+        leftEditorScrollPane.getHorizontalScrollBar().setUI(new NeoBrutalistScrollBarUI());
 
         rightEditorScrollPane = new JScrollPane(rightTextArea);
+        rightEditorScrollPane.setBorder(BorderFactory.createEmptyBorder());
         rightEditorScrollPane.setRowHeaderView(rightLineNumberGutter);
+        rightEditorScrollPane.getVerticalScrollBar().setUI(new NeoBrutalistScrollBarUI());
+        rightEditorScrollPane.getHorizontalScrollBar().setUI(new NeoBrutalistScrollBarUI());
 
         initUI();
         setupEvents();
 
         applyThemeStyles();
-        log.info("MainWindow initialized.");
+        NeoBrutalistTheme.addThemeChangeListener(this::applyThemeStyles);
+        log.info("MainWindow initialized with Neo-Brutalism.");
     }
 
     private void initUI() {
-        JPanel rootPanel = new JPanel(new BorderLayout());
+        JPanel rootPanel = new JPanel(new BorderLayout(0, 10));
         rootPanel.setBorder(new EmptyBorder(12, 16, 12, 16));
-        rootPanel.setBackground(Color.WHITE);
+        rootPanel.setBackground(NeoBrutalistTheme.canvas());
 
-        // 1. Top Header
-        JPanel headerPanel = createHeaderPanel();
+        // 1. Top Header Card (Neo-Brutalist)
+        headerPanel = createHeaderPanel();
         rootPanel.add(headerPanel, BorderLayout.NORTH);
 
         // 2. Center Container
+        centerContainer.setOpaque(false);
         JPanel editorPanel = createEditorPanel();
         centerContainer.add(editorPanel, "EDITOR");
         centerContainer.add(diffViewPanel, "DIFF");
         rootPanel.add(centerContainer, BorderLayout.CENTER);
 
-        // 3. Bottom Toolbar
-        JPanel bottomToolbar = createBottomToolbar();
+        // 3. Bottom Toolbar Dock (Neo-Brutalist)
+        bottomToolbar = createBottomToolbar();
         rootPanel.add(bottomToolbar, BorderLayout.SOUTH);
 
         setContentPane(rootPanel);
     }
 
-    private JPanel createHeaderPanel() {
-        JPanel header = new JPanel(new BorderLayout(10, 8));
-        header.setBorder(new EmptyBorder(0, 0, 10, 0));
-        header.setOpaque(false);
+    private NeoBrutalistPanel createHeaderPanel() {
+        NeoBrutalistPanel header = new NeoBrutalistPanel(new BorderLayout(12, 0), 8, 4, 2.0f);
+        header.setBorder(new EmptyBorder(10, 16, 10, 16));
 
-        // Title Box
+        // Title and Subtitle Box
         JPanel titleBox = new JPanel(new GridLayout(2, 1, 0, 2));
         titleBox.setOpaque(false);
 
-        JLabel titleLabel = new JLabel("⚡ Offline Java Compare Tool");
-        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 22));
-        titleLabel.setForeground(new Color(9, 105, 218));
+        JLabel titleLabel = new JLabel("OFFLINE JAVA COMPARE TOOL");
+        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 20));
+        titleLabel.setForeground(Color.BLACK);
 
-        JLabel subtitleLabel = new JLabel("Find difference between 2 text files. Pure offline comparison with synchronized parallel diffing.");
-        subtitleLabel.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        subtitleLabel.setForeground(new Color(110, 110, 110));
+        JLabel subtitleLabel = new JLabel(
+                "High-contrast Neo-Brutalist parallel file diffing. 100% offline, zero cloud leaks.");
+        subtitleLabel.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        subtitleLabel.setForeground(new Color(60, 60, 60));
 
         titleBox.add(titleLabel);
-        titleBox.add(subtitleLabel);
+        // titleBox.add(subtitleLabel);
         header.add(titleBox, BorderLayout.WEST);
 
-        // Action Buttons with Icons
-        JPanel actionBox = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 0));
+        // Action Buttons
+        JPanel actionBox = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         actionBox.setOpaque(false);
 
-        JButton resetBtn = createActionButton("🔄 Reset", "Clear both text panes", e -> resetInputs());
-        JButton exportBtn = createActionButton("💾 Export Report", "Export standalone HTML diff report", e -> exportHtmlReport());
-        JButton themeBtn = createActionButton("🌓 Theme", "Switch between pure White and pure Black modes", e -> toggleTheme());
+        NeoBrutalistButton resetBtn = new NeoBrutalistButton("🔄 RESET", NeoBrutalistButton.ButtonStyle.DANGER);
+        resetBtn.setToolTipText("Clear both comparison panes");
+        resetBtn.addActionListener(e -> resetInputs());
+
+        NeoBrutalistButton exportBtn = new NeoBrutalistButton("💾 EXPORT REPORT",
+                NeoBrutalistButton.ButtonStyle.DEFAULT);
+        exportBtn.setToolTipText("Export standalone Neo-Brutalist HTML diff report");
+        exportBtn.addActionListener(e -> exportHtmlReport());
+
+        NeoBrutalistButton themeBtn = new NeoBrutalistButton("🌓 THEME", NeoBrutalistButton.ButtonStyle.WARNING);
+        themeBtn.setToolTipText("Toggle between Neo-Brutalist Light and Cyber-Brutalist Dark");
+        themeBtn.addActionListener(e -> toggleTheme());
 
         actionBox.add(resetBtn);
         actionBox.add(exportBtn);
@@ -171,34 +207,49 @@ public class MainWindow extends JFrame {
         JPanel panel = new JPanel(new GridLayout(1, 2, 12, 0));
         panel.setOpaque(false);
 
-        // Left Area
-        JPanel leftBox = new JPanel(new BorderLayout(0, 6));
-        leftBox.setOpaque(false);
+        // Left Area (Neo-Brutalist Card)
+        leftEditorCard = new NeoBrutalistPanel(new BorderLayout(0, 0), 8, 4, 2.0f);
+        leftEditorCard.setBorder(new EmptyBorder(0, 0, 0, 0));
+
+        JPanel leftHeader = new JPanel(new BorderLayout());
+        leftHeader.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createMatteBorder(0, 0, 2, 0, Color.BLACK),
+                new EmptyBorder(8, 12, 8, 12)));
+        leftHeader.setBackground(NeoBrutalistTheme.surfaceAlt());
         leftFileLabel.setFont(new Font("Segoe UI", Font.BOLD, 12));
-        leftEditorScrollPane.setBorder(new LineBorder(new Color(210, 210, 210), 1));
-        leftBox.add(leftFileLabel, BorderLayout.NORTH);
-        leftBox.add(leftEditorScrollPane, BorderLayout.CENTER);
+        leftFileLabel.setForeground(Color.BLACK);
+        leftHeader.add(leftFileLabel, BorderLayout.WEST);
 
-        // Right Area
-        JPanel rightBox = new JPanel(new BorderLayout(0, 6));
-        rightBox.setOpaque(false);
+        leftEditorCard.add(leftHeader, BorderLayout.NORTH);
+        leftEditorCard.add(leftEditorScrollPane, BorderLayout.CENTER);
+
+        // Right Area (Neo-Brutalist Card)
+        rightEditorCard = new NeoBrutalistPanel(new BorderLayout(0, 0), 8, 4, 2.0f);
+        rightEditorCard.setBorder(new EmptyBorder(0, 0, 0, 0));
+
+        JPanel rightHeader = new JPanel(new BorderLayout());
+        rightHeader.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createMatteBorder(0, 0, 2, 0, Color.BLACK),
+                new EmptyBorder(8, 12, 8, 12)));
+        rightHeader.setBackground(NeoBrutalistTheme.surfaceAlt());
         rightFileLabel.setFont(new Font("Segoe UI", Font.BOLD, 12));
-        rightEditorScrollPane.setBorder(new LineBorder(new Color(210, 210, 210), 1));
-        rightBox.add(rightFileLabel, BorderLayout.NORTH);
-        rightBox.add(rightEditorScrollPane, BorderLayout.CENTER);
+        rightFileLabel.setForeground(Color.BLACK);
+        rightHeader.add(rightFileLabel, BorderLayout.WEST);
 
-        panel.add(leftBox);
-        panel.add(rightBox);
+        rightEditorCard.add(rightHeader, BorderLayout.NORTH);
+        rightEditorCard.add(rightEditorScrollPane, BorderLayout.CENTER);
+
+        panel.add(leftEditorCard);
+        panel.add(rightEditorCard);
         return panel;
     }
 
-    private JPanel createBottomToolbar() {
-        JPanel toolbar = new JPanel(new BorderLayout(10, 8));
-        toolbar.setBorder(new EmptyBorder(10, 0, 0, 0));
-        toolbar.setOpaque(false);
+    private NeoBrutalistPanel createBottomToolbar() {
+        NeoBrutalistPanel toolbar = new NeoBrutalistPanel(new BorderLayout(12, 0), 8, 4, 2.0f);
+        toolbar.setBorder(new EmptyBorder(8, 14, 8, 14));
 
         // Filter Toggles
-        JPanel optionsBox = new JPanel(new FlowLayout(FlowLayout.LEFT, 14, 0));
+        JPanel optionsBox = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 0));
         optionsBox.setOpaque(false);
 
         wordWrapToggle.setToolTipText("Toggle soft line wrapping");
@@ -213,35 +264,20 @@ public class MainWindow extends JFrame {
 
         toolbar.add(optionsBox, BorderLayout.WEST);
 
-        // Navigation & Trigger
-        JPanel navBox = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
+        // Navigation & Trigger Controls
+        JPanel navBox = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         navBox.setOpaque(false);
 
-        diffStatusLabel.setFont(new Font("Segoe UI", Font.BOLD, 12));
-        diffStatusLabel.setForeground(new Color(207, 34, 46));
-
-        modeToggleButton.setBackground(new Color(9, 105, 218));
-        modeToggleButton.setForeground(Color.WHITE);
-        modeToggleButton.setFont(new Font("Segoe UI", Font.BOLD, 12));
-        modeToggleButton.setFocusPainted(false);
         modeToggleButton.addActionListener(e -> toggleViewMode());
 
-        JButton compareBtn = new JButton("⚡ COMPARE");
-        compareBtn.setFont(new Font("Segoe UI", Font.BOLD, 12));
-        compareBtn.setBackground(new Color(26, 127, 55));
-        compareBtn.setForeground(Color.WHITE);
-        compareBtn.setFocusPainted(false);
         compareBtn.addActionListener(e -> {
             performDiff();
             showDiffView();
         });
 
-        prevButton.setFocusPainted(false);
-        nextButton.setFocusPainted(false);
-
         navBox.add(prevButton);
         navBox.add(nextButton);
-        navBox.add(diffStatusLabel);
+        navBox.add(diffStatusBadge);
         navBox.add(modeToggleButton);
         navBox.add(compareBtn);
 
@@ -249,23 +285,22 @@ public class MainWindow extends JFrame {
         return toolbar;
     }
 
-    private JButton createActionButton(String text, String tooltip, java.awt.event.ActionListener action) {
-        JButton button = new JButton(text);
-        button.setToolTipText(tooltip);
-        button.setFocusPainted(false);
-        button.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        button.addActionListener(action);
-        return button;
-    }
-
     private void setupEvents() {
         DocumentListener docListener = new DocumentListener() {
             @Override
-            public void insertUpdate(DocumentEvent e) { performDiff(); }
+            public void insertUpdate(DocumentEvent e) {
+                performDiff();
+            }
+
             @Override
-            public void removeUpdate(DocumentEvent e) { performDiff(); }
+            public void removeUpdate(DocumentEvent e) {
+                performDiff();
+            }
+
             @Override
-            public void changedUpdate(DocumentEvent e) { performDiff(); }
+            public void changedUpdate(DocumentEvent e) {
+                performDiff();
+            }
         };
         leftTextArea.getDocument().addDocumentListener(docListener);
         rightTextArea.getDocument().addDocumentListener(docListener);
@@ -291,8 +326,7 @@ public class MainWindow extends JFrame {
 
         diffViewPanel.setOnFileDroppedListeners(
                 file -> loadFileIntoPane(file, true),
-                file -> loadFileIntoPane(file, false)
-        );
+                file -> loadFileIntoPane(file, false));
     }
 
     private void performDiff() {
@@ -304,19 +338,18 @@ public class MainWindow extends JFrame {
                 trimLinesToggle.isSelected(),
                 false,
                 hideUnchangedToggle.isSelected(),
-                wordWrapToggle.isSelected()
-        );
+                wordWrapToggle.isSelected());
 
         currentDiffResult = diffService.compare(left, right, options);
         diffViewPanel.displayDiff(currentDiffResult);
 
         int total = currentDiffResult.totalDifferences();
         if (total == 0) {
-            diffStatusLabel.setText("✅ Identical (0 diffs)");
-            diffStatusLabel.setForeground(isDarkMode ? new Color(63, 185, 80) : new Color(26, 127, 55));
+            diffStatusBadge.setText("✅ IDENTICAL (0 DIFFS)");
+            diffStatusBadge.setBadgeType(NeoBrutalistBadge.BadgeType.SUCCESS);
         } else {
-            diffStatusLabel.setText("⚠️ " + total + " diff" + (total > 1 ? "s" : ""));
-            diffStatusLabel.setForeground(isDarkMode ? new Color(248, 81, 73) : new Color(207, 34, 46));
+            diffStatusBadge.setText("⚠️ " + total + " DIFF" + (total > 1 ? "S" : ""));
+            diffStatusBadge.setBadgeType(NeoBrutalistBadge.BadgeType.DANGER);
         }
 
         prevButton.setEnabled(total > 0);
@@ -325,7 +358,8 @@ public class MainWindow extends JFrame {
     }
 
     private void navigateDiff(int direction) {
-        if (currentDiffResult == null || currentDiffResult.diffRowIndices().isEmpty()) return;
+        if (currentDiffResult == null || currentDiffResult.diffRowIndices().isEmpty())
+            return;
 
         int total = currentDiffResult.diffRowIndices().size();
         currentDiffNavigationIndex += direction;
@@ -336,7 +370,8 @@ public class MainWindow extends JFrame {
             currentDiffNavigationIndex = total - 1;
         }
 
-        diffStatusLabel.setText("Diff " + (currentDiffNavigationIndex + 1) + " of " + total);
+        diffStatusBadge.setText("DIFF " + (currentDiffNavigationIndex + 1) + " OF " + total);
+        diffStatusBadge.setBadgeType(NeoBrutalistBadge.BadgeType.INFO);
         showDiffView();
         diffViewPanel.scrollToDiffIndex(currentDiffNavigationIndex);
     }
@@ -352,13 +387,13 @@ public class MainWindow extends JFrame {
     private void showDiffView() {
         isDiffViewActive = true;
         cardLayout.show(centerContainer, "DIFF");
-        modeToggleButton.setText("✏️ Edit Text Mode");
+        modeToggleButton.setText("✏️ EDIT TEXT MODE");
     }
 
     private void showEditorView() {
         isDiffViewActive = false;
         cardLayout.show(centerContainer, "EDITOR");
-        modeToggleButton.setText("🔍 Visual Diff View");
+        modeToggleButton.setText("🔍 VISUAL DIFF VIEW");
     }
 
     private void loadFileIntoPane(File file, boolean isLeft) {
@@ -367,11 +402,11 @@ public class MainWindow extends JFrame {
             var loaded = FileLoader.loadFile(file);
             if (isLeft) {
                 leftFileName = loaded.fileName();
-                leftFileLabel.setText("📄 Original: " + leftFileName + " (" + loaded.charset().name() + ")");
+                leftFileLabel.setText("📄 ORIGINAL: " + leftFileName + " (" + loaded.charset().name() + ")");
                 leftTextArea.setText(loaded.content());
             } else {
                 rightFileName = loaded.fileName();
-                rightFileLabel.setText("📄 Modified: " + rightFileName + " (" + loaded.charset().name() + ")");
+                rightFileLabel.setText("📄 MODIFIED: " + rightFileName + " (" + loaded.charset().name() + ")");
                 rightTextArea.setText(loaded.content());
             }
             performDiff();
@@ -379,12 +414,14 @@ public class MainWindow extends JFrame {
             log.info("File loaded successfully ({} chars).", loaded.content().length());
         } catch (Exception ex) {
             log.error("Failed to load file: {}", file.getAbsolutePath(), ex);
-            JOptionPane.showMessageDialog(this, "Failed to load file: " + ex.getMessage(), "File Load Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Failed to load file: " + ex.getMessage(), "File Load Error",
+                    JOptionPane.ERROR_MESSAGE);
         }
     }
 
     private void resetInputs() {
-        int confirm = JOptionPane.showConfirmDialog(this, "Are you sure you want to clear both inputs?", "Reset", JOptionPane.YES_NO_OPTION);
+        int confirm = JOptionPane.showConfirmDialog(this, "Are you sure you want to clear both inputs?", "Reset",
+                JOptionPane.YES_NO_OPTION);
         if (confirm == JOptionPane.YES_OPTION) {
             log.info("Resetting comparison inputs.");
             leftTextArea.setText("");
@@ -395,8 +432,8 @@ public class MainWindow extends JFrame {
             rightLineNumberGutter.repaint();
             leftFileName = "Original";
             rightFileName = "Modified";
-            leftFileLabel.setText("📄 Original (Left) - Paste text or drop file");
-            rightFileLabel.setText("📄 Modified (Right) - Paste text or drop file");
+            leftFileLabel.setText("📄 ORIGINAL (LEFT) - Paste text or drop file");
+            rightFileLabel.setText("📄 MODIFIED (RIGHT) - Paste text or drop file");
             performDiff();
             showEditorView();
         }
@@ -408,21 +445,26 @@ public class MainWindow extends JFrame {
         int res = chooser.showSaveDialog(this);
         if (res == JFileChooser.APPROVE_OPTION) {
             try {
-                ReportExporter.exportHtmlReport(currentDiffResult, leftFileName, rightFileName, chooser.getSelectedFile());
+                ReportExporter.exportHtmlReport(currentDiffResult, leftFileName, rightFileName,
+                        chooser.getSelectedFile());
                 log.info("Report exported to: {}", chooser.getSelectedFile().getAbsolutePath());
-                JOptionPane.showMessageDialog(this, "Report saved to:\n" + chooser.getSelectedFile().getAbsolutePath(), "Export Successful", JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Report saved to:\n" + chooser.getSelectedFile().getAbsolutePath(),
+                        "Export Successful", JOptionPane.INFORMATION_MESSAGE);
             } catch (Exception ex) {
                 log.error("Failed to export report", ex);
-                JOptionPane.showMessageDialog(this, "Failed to export report: " + ex.getMessage(), "Export Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Failed to export report: " + ex.getMessage(), "Export Error",
+                        JOptionPane.ERROR_MESSAGE);
             }
         }
     }
 
     private void toggleTheme() {
-        isDarkMode = !isDarkMode;
-        log.info("Switching theme to: {}", isDarkMode ? "Pure Black" : "Pure White");
+        boolean newDark = !NeoBrutalistTheme.isDark();
+        log.info("Switching Neo-Brutalist theme to: {}", newDark ? "Cyber Dark" : "Retro Light");
+        NeoBrutalistTheme.setDark(newDark);
+
         try {
-            if (isDarkMode) {
+            if (newDark) {
                 UIManager.setLookAndFeel(new FlatDarkLaf());
             } else {
                 UIManager.setLookAndFeel(new FlatLightLaf());
@@ -435,45 +477,42 @@ public class MainWindow extends JFrame {
     }
 
     private void applyThemeStyles() {
-        Color bg = isDarkMode ? Color.BLACK : Color.WHITE;
-        Color fg = isDarkMode ? Color.WHITE : Color.BLACK;
-        Color borderCol = isDarkMode ? new Color(50, 50, 50) : new Color(210, 210, 210);
+        boolean dark = NeoBrutalistTheme.isDark();
+        Color canvas = NeoBrutalistTheme.canvas();
+        Color surface = NeoBrutalistTheme.surface();
+        Color fg = NeoBrutalistTheme.textPrimary();
 
-        getContentPane().setBackground(bg);
-        centerContainer.setBackground(bg);
+        getContentPane().setBackground(canvas);
+        centerContainer.setBackground(canvas);
 
-        leftTextArea.setBackground(bg);
+        leftTextArea.setBackground(surface);
         leftTextArea.setForeground(fg);
-        leftTextArea.setCaretColor(fg);
+        leftTextArea.setCaretColor(dark ? Color.WHITE : Color.BLACK);
+        leftTextArea.setSelectionColor(new Color(255, 230, 0, 100)); // Electric yellow selection
 
-        rightTextArea.setBackground(bg);
+        rightTextArea.setBackground(surface);
         rightTextArea.setForeground(fg);
-        rightTextArea.setCaretColor(fg);
+        rightTextArea.setCaretColor(dark ? Color.WHITE : Color.BLACK);
+        rightTextArea.setSelectionColor(new Color(255, 230, 0, 100));
 
-        leftEditorScrollPane.getViewport().setBackground(bg);
-        leftEditorScrollPane.setBorder(new LineBorder(borderCol, 1));
-        rightEditorScrollPane.getViewport().setBackground(bg);
-        rightEditorScrollPane.setBorder(new LineBorder(borderCol, 1));
+        leftEditorScrollPane.getViewport().setBackground(surface);
+        rightEditorScrollPane.getViewport().setBackground(surface);
 
         leftFileLabel.setForeground(fg);
         rightFileLabel.setForeground(fg);
 
-        wordWrapToggle.setForeground(fg);
-        hideUnchangedToggle.setForeground(fg);
-        trimLinesToggle.setForeground(fg);
-        ignoreCaseToggle.setForeground(fg);
+        leftLineNumberGutter.setDarkTheme(dark);
+        rightLineNumberGutter.setDarkTheme(dark);
 
-        Color gutterBg = isDarkMode ? TextLineNumberPanel.DARK_GUTTER_BG : TextLineNumberPanel.LIGHT_GUTTER_BG;
-        leftLineNumberGutter.setDarkTheme(isDarkMode);
-        rightLineNumberGutter.setDarkTheme(isDarkMode);
         if (leftEditorScrollPane.getRowHeader() != null) {
-            leftEditorScrollPane.getRowHeader().setBackground(gutterBg);
+            leftEditorScrollPane.getRowHeader().setBackground(NeoBrutalistTheme.surfaceAlt());
         }
         if (rightEditorScrollPane.getRowHeader() != null) {
-            rightEditorScrollPane.getRowHeader().setBackground(gutterBg);
+            rightEditorScrollPane.getRowHeader().setBackground(NeoBrutalistTheme.surfaceAlt());
         }
 
-        diffViewPanel.setDarkTheme(isDarkMode);
+        diffViewPanel.setDarkTheme(dark);
         performDiff();
+        repaint();
     }
 }

@@ -4,8 +4,13 @@ import com.javacompare.model.DiffResult;
 import com.javacompare.model.DiffRow;
 import com.javacompare.model.DiffType;
 import com.javacompare.model.TextSpan;
+import com.javacompare.ui.neobrutalism.NeoBrutalistPanel;
+import com.javacompare.ui.neobrutalism.NeoBrutalistScrollBarUI;
+import com.javacompare.ui.neobrutalism.NeoBrutalistTheme;
+import com.javacompare.ui.neobrutalism.NeoBrutalistUtils;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import java.awt.*;
@@ -15,9 +20,9 @@ import java.util.List;
 import java.util.function.Consumer;
 
 /**
- * Git-style dual-pane comparison viewer.
- * Unchanged lines are clean ("leave it"), differences are clearly distinguished (Red for deleted/old, Green for added/new),
- * and gaps/spacers on opposing sides are rendered with explicit diagonal hatch patterns so matching lines remain aligned.
+ * Git-style dual-pane comparison viewer engineered with Neo-Brutalist design.
+ * Chunky 2px solid black borders, hard offset shadows, high-contrast typography,
+ * and bold saturated diff indicators.
  */
 public class DiffViewPanel extends JPanel {
 
@@ -34,108 +39,70 @@ public class DiffViewPanel extends JPanel {
     private final JPanel rightHeaderPanel;
     private final JLabel rightHeaderLabel;
 
+    private final NeoBrutalistPanel leftCard;
+    private final NeoBrutalistPanel rightCard;
+
     private DiffResult currentResult = DiffResult.empty();
     private boolean isDarkTheme = false;
     private Consumer<File> onLeftFileDropped;
     private Consumer<File> onRightFileDropped;
 
-    // --- Git Color Palette ---
-
-    // Light Theme (Git Light / GitHub)
-    private static final Color LIGHT_BG = Color.WHITE;
-    private static final Color LIGHT_TEXT = new Color(31, 35, 40);
-    private static final Color LIGHT_GUTTER_BG = new Color(246, 248, 250);
-    private static final Color LIGHT_GUTTER_TEXT = new Color(110, 119, 129);
-    private static final Color LIGHT_BORDER = new Color(208, 215, 222);
-
-    private static final Color LIGHT_INSERT_BG = new Color(230, 255, 236);
-    private static final Color LIGHT_INSERT_TEXT = new Color(26, 127, 55);
-    private static final Color LIGHT_INSERT_GUTTER_BG = new Color(204, 255, 216);
-    private static final Color LIGHT_INSERT_GUTTER_FG = new Color(26, 127, 55);
-    private static final Color LIGHT_INSERT_BADGE = new Color(171, 242, 188);
-
-    private static final Color LIGHT_DELETE_BG = new Color(255, 235, 233);
-    private static final Color LIGHT_DELETE_TEXT = new Color(207, 34, 46);
-    private static final Color LIGHT_DELETE_GUTTER_BG = new Color(255, 220, 215);
-    private static final Color LIGHT_DELETE_GUTTER_FG = new Color(207, 34, 46);
-    private static final Color LIGHT_DELETE_BADGE = new Color(255, 193, 186);
-
-    private static final Color LIGHT_GAP_BG = new Color(246, 248, 250);
-    private static final Color LIGHT_GAP_STRIPE = new Color(218, 222, 227);
-
-    // Dark Theme (Git Dark / GitHub Dark)
-    private static final Color DARK_BG = new Color(13, 17, 23);
-    private static final Color DARK_TEXT = new Color(201, 209, 217);
-    private static final Color DARK_GUTTER_BG = new Color(22, 27, 34);
-    private static final Color DARK_GUTTER_TEXT = new Color(139, 148, 158);
-    private static final Color DARK_BORDER = new Color(48, 54, 61);
-
-    private static final Color DARK_INSERT_BG = new Color(17, 42, 26);
-    private static final Color DARK_INSERT_TEXT = new Color(126, 231, 135);
-    private static final Color DARK_INSERT_GUTTER_BG = new Color(23, 61, 34);
-    private static final Color DARK_INSERT_GUTTER_FG = new Color(63, 185, 80);
-    private static final Color DARK_INSERT_BADGE = new Color(35, 98, 51);
-
-    private static final Color DARK_DELETE_BG = new Color(58, 16, 20);
-    private static final Color DARK_DELETE_TEXT = new Color(255, 123, 114);
-    private static final Color DARK_DELETE_GUTTER_BG = new Color(77, 21, 25);
-    private static final Color DARK_DELETE_GUTTER_FG = new Color(248, 81, 73);
-    private static final Color DARK_DELETE_BADGE = new Color(126, 34, 38);
-
-    private static final Color DARK_GAP_BG = new Color(22, 27, 34);
-    private static final Color DARK_GAP_STRIPE = new Color(48, 54, 61);
-
     private static final Font CODE_FONT = new Font("JetBrains Mono", Font.PLAIN, 13);
     private static final Font FALLBACK_CODE_FONT = new Font(Font.MONOSPACED, Font.PLAIN, 13);
 
     public DiffViewPanel() {
-        setLayout(new BorderLayout());
-        setBackground(LIGHT_BG);
+        setLayout(new BorderLayout(10, 0));
+        setOpaque(false);
 
         // Left Table (Original)
         leftTable = createDiffTable(true);
         leftScrollPane = new JScrollPane(leftTable);
         leftScrollPane.setBorder(BorderFactory.createEmptyBorder());
-        leftScrollPane.getViewport().setBackground(LIGHT_BG);
+        leftScrollPane.getViewport().setBackground(NeoBrutalistTheme.surface());
+        leftScrollPane.getVerticalScrollBar().setUI(new NeoBrutalistScrollBarUI());
+        leftScrollPane.getHorizontalScrollBar().setUI(new NeoBrutalistScrollBarUI());
 
         // Right Table (Modified)
         rightTable = createDiffTable(false);
         rightScrollPane = new JScrollPane(rightTable);
         rightScrollPane.setBorder(BorderFactory.createEmptyBorder());
-        rightScrollPane.getViewport().setBackground(LIGHT_BG);
+        rightScrollPane.getViewport().setBackground(NeoBrutalistTheme.surface());
+        rightScrollPane.getVerticalScrollBar().setUI(new NeoBrutalistScrollBarUI());
+        rightScrollPane.getHorizontalScrollBar().setUI(new NeoBrutalistScrollBarUI());
 
-        // Pane Headers
+        // Header Panels with bold bottom borders
         leftHeaderPanel = new JPanel(new BorderLayout());
         leftHeaderPanel.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createMatteBorder(0, 0, 1, 0, LIGHT_BORDER),
-                BorderFactory.createEmptyBorder(6, 12, 6, 12)
+                BorderFactory.createMatteBorder(0, 0, 2, 0, Color.BLACK),
+                new EmptyBorder(8, 12, 8, 12)
         ));
-        leftHeaderPanel.setBackground(LIGHT_GUTTER_BG);
-        leftHeaderLabel = new JLabel("📄 Original (Left)");
+        leftHeaderPanel.setBackground(NeoBrutalistTheme.surfaceAlt());
+        leftHeaderLabel = new JLabel("📄 ORIGINAL (LEFT)");
         leftHeaderLabel.setFont(new Font("Segoe UI", Font.BOLD, 12));
-        leftHeaderLabel.setForeground(LIGHT_TEXT);
+        leftHeaderLabel.setForeground(Color.BLACK);
         leftHeaderPanel.add(leftHeaderLabel, BorderLayout.WEST);
 
         rightHeaderPanel = new JPanel(new BorderLayout());
         rightHeaderPanel.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createMatteBorder(0, 0, 1, 0, LIGHT_BORDER),
-                BorderFactory.createEmptyBorder(6, 12, 6, 12)
+                BorderFactory.createMatteBorder(0, 0, 2, 0, Color.BLACK),
+                new EmptyBorder(8, 12, 8, 12)
         ));
-        rightHeaderPanel.setBackground(LIGHT_GUTTER_BG);
-        rightHeaderLabel = new JLabel("📄 Modified (Right)");
+        rightHeaderPanel.setBackground(NeoBrutalistTheme.surfaceAlt());
+        rightHeaderLabel = new JLabel("📄 MODIFIED (RIGHT)");
         rightHeaderLabel.setFont(new Font("Segoe UI", Font.BOLD, 12));
-        rightHeaderLabel.setForeground(LIGHT_TEXT);
+        rightHeaderLabel.setForeground(Color.BLACK);
         rightHeaderPanel.add(rightHeaderLabel, BorderLayout.WEST);
 
-        // Left Container
-        JPanel leftContainer = new JPanel(new BorderLayout());
-        leftContainer.add(leftHeaderPanel, BorderLayout.NORTH);
-        leftContainer.add(leftScrollPane, BorderLayout.CENTER);
+        // Wrap left & right inside Neo-Brutalist Cards (2px border, 4px hard shadow)
+        leftCard = new NeoBrutalistPanel(new BorderLayout(), 8, 4, 2.0f);
+        leftCard.setBorder(new EmptyBorder(2, 2, 2, 2));
+        leftCard.add(leftHeaderPanel, BorderLayout.NORTH);
+        leftCard.add(leftScrollPane, BorderLayout.CENTER);
 
-        // Right Container
-        JPanel rightContainer = new JPanel(new BorderLayout());
-        rightContainer.add(rightHeaderPanel, BorderLayout.NORTH);
-        rightContainer.add(rightScrollPane, BorderLayout.CENTER);
+        rightCard = new NeoBrutalistPanel(new BorderLayout(), 8, 4, 2.0f);
+        rightCard.setBorder(new EmptyBorder(2, 2, 2, 2));
+        rightCard.add(rightHeaderPanel, BorderLayout.NORTH);
+        rightCard.add(rightScrollPane, BorderLayout.CENTER);
 
         // MiniMap on right edge
         miniMap = new DiffMiniMap();
@@ -146,47 +113,51 @@ public class DiffViewPanel extends JPanel {
         leftScrollPane.getVerticalScrollBar().addAdjustmentListener(e -> updateMiniMapViewport());
 
         // Split Pane
-        splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, leftContainer, rightContainer);
+        splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, leftCard, rightCard);
         splitPane.setResizeWeight(0.5);
-        splitPane.setDividerSize(5);
+        splitPane.setDividerSize(8);
         splitPane.setBorder(BorderFactory.createEmptyBorder());
-        splitPane.setBackground(LIGHT_BG);
+        splitPane.setOpaque(false);
 
         add(splitPane, BorderLayout.CENTER);
         add(miniMap, BorderLayout.EAST);
 
         setupDragAndDrop();
+        NeoBrutalistTheme.addThemeChangeListener(this::applyThemeStyles);
+        applyThemeStyles();
     }
 
     public void setDarkTheme(boolean darkTheme) {
         this.isDarkTheme = darkTheme;
-        Color bg = darkTheme ? DARK_BG : LIGHT_BG;
-        Color fg = darkTheme ? DARK_TEXT : LIGHT_TEXT;
-        Color headerBg = darkTheme ? DARK_GUTTER_BG : LIGHT_GUTTER_BG;
-        Color borderCol = darkTheme ? DARK_BORDER : LIGHT_BORDER;
+        applyThemeStyles();
+    }
 
-        setBackground(bg);
-        splitPane.setBackground(bg);
-        leftScrollPane.getViewport().setBackground(bg);
-        rightScrollPane.getViewport().setBackground(bg);
-        leftTable.setBackground(bg);
-        rightTable.setBackground(bg);
+    private void applyThemeStyles() {
+        Color surface = NeoBrutalistTheme.surface();
+        Color alt = NeoBrutalistTheme.surfaceAlt();
+        Color border = NeoBrutalistTheme.border();
+        Color fg = NeoBrutalistTheme.textPrimary();
 
-        leftHeaderPanel.setBackground(headerBg);
+        leftScrollPane.getViewport().setBackground(surface);
+        rightScrollPane.getViewport().setBackground(surface);
+        leftTable.setBackground(surface);
+        rightTable.setBackground(surface);
+
+        leftHeaderPanel.setBackground(alt);
         leftHeaderPanel.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createMatteBorder(0, 0, 1, 0, borderCol),
-                BorderFactory.createEmptyBorder(6, 12, 6, 12)
+                BorderFactory.createMatteBorder(0, 0, 2, 0, border),
+                new EmptyBorder(8, 12, 8, 12)
         ));
         leftHeaderLabel.setForeground(fg);
 
-        rightHeaderPanel.setBackground(headerBg);
+        rightHeaderPanel.setBackground(alt);
         rightHeaderPanel.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createMatteBorder(0, 0, 1, 0, borderCol),
-                BorderFactory.createEmptyBorder(6, 12, 6, 12)
+                BorderFactory.createMatteBorder(0, 0, 2, 0, border),
+                new EmptyBorder(8, 12, 8, 12)
         ));
         rightHeaderLabel.setForeground(fg);
 
-        miniMap.setDarkTheme(darkTheme);
+        miniMap.setDarkTheme(NeoBrutalistTheme.isDark());
         repaint();
     }
 
@@ -220,7 +191,6 @@ public class DiffViewPanel extends JPanel {
             }
         }
 
-        // Adjust preferred content and gutter column widths
         FontMetrics fm = leftTable.getFontMetrics(leftTable.getFont());
         int charW = fm.charWidth('m');
         int contentWidth = Math.max(700, maxLen * charW + 100);
@@ -229,7 +199,7 @@ public class DiffViewPanel extends JPanel {
 
         int maxLine = Math.max(currentResult.originalLineCount(), currentResult.modifiedLineCount());
         int digits = Math.max(3, String.valueOf(maxLine).length());
-        int gutterW = Math.max(62, digits * fm.charWidth('9') + 32);
+        int gutterW = Math.max(64, digits * fm.charWidth('9') + 34);
         leftTable.getColumnModel().getColumn(0).setPreferredWidth(gutterW);
         leftTable.getColumnModel().getColumn(0).setMinWidth(gutterW);
         leftTable.getColumnModel().getColumn(0).setMaxWidth(gutterW);
@@ -237,12 +207,12 @@ public class DiffViewPanel extends JPanel {
         rightTable.getColumnModel().getColumn(0).setMinWidth(gutterW);
         rightTable.getColumnModel().getColumn(0).setMaxWidth(gutterW);
 
-        // Update header badges
+        // Header labels with punchy counts
         int del = currentResult.deletionsCount();
         int ins = currentResult.insertionsCount();
         int mod = currentResult.modificationsCount();
-        leftHeaderLabel.setText("📄 Original" + (del + mod > 0 ? "  (-" + (del + mod) + " lines)" : ""));
-        rightHeaderLabel.setText("📄 Modified" + (ins + mod > 0 ? "  (+" + (ins + mod) + " lines)" : ""));
+        leftHeaderLabel.setText("📄 ORIGINAL (LEFT)" + (del + mod > 0 ? "  [-" + (del + mod) + " lines]" : ""));
+        rightHeaderLabel.setText("📄 MODIFIED (RIGHT)" + (ins + mod > 0 ? "  [+" + (ins + mod) + " lines]" : ""));
 
         miniMap.updateDiffResult(currentResult);
         updateMiniMapViewport();
@@ -282,19 +252,16 @@ public class DiffViewPanel extends JPanel {
         table.setIntercellSpacing(new Dimension(0, 0));
         table.setFillsViewportHeight(true);
         table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-        table.setTableHeader(null); // Clean view without default table headers
+        table.setTableHeader(null);
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
-        // Hide Metadata column (index 2)
         table.removeColumn(table.getColumnModel().getColumn(2));
 
-        // Column 0: Gutter
-        table.getColumnModel().getColumn(0).setMaxWidth(62);
-        table.getColumnModel().getColumn(0).setMinWidth(62);
-        table.getColumnModel().getColumn(0).setPreferredWidth(62);
+        table.getColumnModel().getColumn(0).setMaxWidth(64);
+        table.getColumnModel().getColumn(0).setMinWidth(64);
+        table.getColumnModel().getColumn(0).setPreferredWidth(64);
         table.getColumnModel().getColumn(0).setCellRenderer(new GutterCellRenderer(isLeft));
 
-        // Column 1: Content
         table.getColumnModel().getColumn(1).setCellRenderer(new ContentCellRenderer(isLeft));
 
         return table;
@@ -358,14 +325,14 @@ public class DiffViewPanel extends JPanel {
         g2.fillRect(0, 0, width, height);
 
         g2.setColor(stripeColor);
-        g2.setStroke(new BasicStroke(1.0f));
+        g2.setStroke(new BasicStroke(1.2f));
         int step = 10;
         for (int x = -height; x < width; x += step) {
             g2.drawLine(x, height, x + height, 0);
         }
     }
 
-    // --- Git-Style Gutter Renderer ---
+    // --- Neo-Brutalist Gutter Cell Renderer ---
 
     private class GutterCellRenderer extends JComponent implements TableCellRenderer {
         private final boolean isLeft;
@@ -386,8 +353,7 @@ public class DiffViewPanel extends JPanel {
         @Override
         protected void paintComponent(Graphics g) {
             Graphics2D g2 = (Graphics2D) g.create();
-            g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            NeoBrutalistUtils.applyQualityHints(g2);
 
             int w = getWidth();
             int h = getHeight();
@@ -396,28 +362,25 @@ public class DiffViewPanel extends JPanel {
             boolean isGap = (lineNum <= 0);
             boolean isDiff = (currentRow != null && currentRow.isDifference());
 
-            Color borderCol = isDarkTheme ? DARK_BORDER : LIGHT_BORDER;
+            Color borderCol = NeoBrutalistTheme.border();
 
             if (isGap) {
-                // Gap in gutter: diagonal hatch pattern, no line number
-                Color gapBg = isDarkTheme ? DARK_GAP_BG : LIGHT_GAP_BG;
-                Color stripeColor = isDarkTheme ? DARK_GAP_STRIPE : LIGHT_GAP_STRIPE;
+                Color gapBg = NeoBrutalistTheme.diffGapBg();
+                Color stripeColor = NeoBrutalistTheme.diffGapStripe();
                 paintHatchPattern(g2, w, h, gapBg, stripeColor);
             } else {
-                // Background
                 Color bg;
                 if (!isDiff || currentRow.type() == DiffType.EQUAL) {
-                    bg = isDarkTheme ? DARK_GUTTER_BG : LIGHT_GUTTER_BG;
+                    bg = NeoBrutalistTheme.surfaceAlt();
                 } else if (isLeft) {
-                    bg = isDarkTheme ? DARK_DELETE_GUTTER_BG : LIGHT_DELETE_GUTTER_BG;
+                    bg = NeoBrutalistTheme.diffDeleteBg();
                 } else {
-                    bg = isDarkTheme ? DARK_INSERT_GUTTER_BG : LIGHT_INSERT_GUTTER_BG;
+                    bg = NeoBrutalistTheme.diffInsertBg();
                 }
 
                 g2.setColor(bg);
                 g2.fillRect(0, 0, w, h);
 
-                // Gutter Text: Line number + Git symbol ('-' or '+')
                 Font font = new Font(Font.MONOSPACED, Font.PLAIN, 12);
                 g2.setFont(font);
                 FontMetrics fm = g2.getFontMetrics(font);
@@ -430,37 +393,36 @@ public class DiffViewPanel extends JPanel {
                 if (isDiff) {
                     if (isLeft) {
                         sym = "-";
-                        fg = isDarkTheme ? DARK_DELETE_GUTTER_FG : LIGHT_DELETE_GUTTER_FG;
+                        fg = NeoBrutalistTheme.diffDeleteText();
                     } else {
                         sym = "+";
-                        fg = isDarkTheme ? DARK_INSERT_GUTTER_FG : LIGHT_INSERT_GUTTER_FG;
+                        fg = NeoBrutalistTheme.diffInsertText();
                     }
                 } else {
-                    fg = isDarkTheme ? DARK_GUTTER_TEXT : LIGHT_GUTTER_TEXT;
+                    fg = NeoBrutalistTheme.textMuted();
                 }
 
                 g2.setColor(fg);
 
-                // Right-aligned line number
                 int numX = w - 24 - fm.stringWidth(numStr);
                 g2.drawString(numStr, numX, textY);
 
-                // Git symbol on right side of gutter
                 if (!sym.isEmpty()) {
                     g2.setFont(font.deriveFont(Font.BOLD));
                     g2.drawString(sym, w - 16, textY);
                 }
             }
 
-            // Gutter vertical separator line
+            // Bold vertical divider line
             g2.setColor(borderCol);
+            g2.setStroke(new BasicStroke(2.0f));
             g2.drawLine(w - 1, 0, w - 1, h);
 
             g2.dispose();
         }
     }
 
-    // --- Git-Style Content Cell Renderer ---
+    // --- Neo-Brutalist Content Cell Renderer ---
 
     private class ContentCellRenderer extends JComponent implements TableCellRenderer {
         private final boolean isLeft;
@@ -485,8 +447,7 @@ public class DiffViewPanel extends JPanel {
         @Override
         protected void paintComponent(Graphics g) {
             Graphics2D g2 = (Graphics2D) g.create();
-            g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            NeoBrutalistUtils.applyQualityHints(g2);
 
             int w = getWidth();
             int h = getHeight();
@@ -495,46 +456,38 @@ public class DiffViewPanel extends JPanel {
             boolean isDiff = (currentRow != null && currentRow.isDifference());
 
             if (isGap) {
-                // Proper Gap: diagonal hatch stripes
-                Color gapBg = isDarkTheme ? DARK_GAP_BG : LIGHT_GAP_BG;
-                Color stripeColor = isDarkTheme ? DARK_GAP_STRIPE : LIGHT_GAP_STRIPE;
+                Color gapBg = NeoBrutalistTheme.diffGapBg();
+                Color stripeColor = NeoBrutalistTheme.diffGapStripe();
                 paintHatchPattern(g2, w, h, gapBg, stripeColor);
             } else if (currentRow != null && currentRow.type() == DiffType.SPACER) {
-                // Collapsed spacer row
-                Color spacerBg = isDarkTheme ? DARK_GUTTER_BG : LIGHT_GUTTER_BG;
+                Color spacerBg = NeoBrutalistTheme.surfaceAlt();
                 g2.setColor(spacerBg);
                 g2.fillRect(0, 0, w, h);
 
-                Font font = getAppropriateFont().deriveFont(Font.ITALIC, 12f);
+                Font font = getAppropriateFont().deriveFont(Font.BOLD, 12f);
                 g2.setFont(font);
-                g2.setColor(isDarkTheme ? DARK_GUTTER_TEXT : LIGHT_GUTTER_TEXT);
+                g2.setColor(NeoBrutalistTheme.textMuted());
                 FontMetrics fm = g2.getFontMetrics(font);
                 int textY = (h - fm.getHeight()) / 2 + fm.getAscent();
                 g2.drawString(currentText, 16, textY);
             } else {
-                // Background
                 Color bg;
                 if (!isDiff || currentRow.type() == DiffType.EQUAL) {
-                    // "if match leave it" -> Clean normal editor background
-                    bg = isDarkTheme ? DARK_BG : LIGHT_BG;
+                    bg = NeoBrutalistTheme.surface();
                 } else if (isLeft) {
-                    // Left side diff (Delete or Change) -> Red
-                    bg = isDarkTheme ? DARK_DELETE_BG : LIGHT_DELETE_BG;
+                    bg = NeoBrutalistTheme.diffDeleteBg();
                 } else {
-                    // Right side diff (Insert or Change) -> Green
-                    bg = isDarkTheme ? DARK_INSERT_BG : LIGHT_INSERT_BG;
+                    bg = NeoBrutalistTheme.diffInsertBg();
                 }
 
                 g2.setColor(bg);
                 g2.fillRect(0, 0, w, h);
 
-                // Subtle selection overlay
                 if (isSelected) {
-                    g2.setColor(isDarkTheme ? new Color(56, 139, 253, 50) : new Color(9, 105, 218, 30));
+                    g2.setColor(new Color(255, 230, 0, 70)); // Electric yellow selection
                     g2.fillRect(0, 0, w, h);
                 }
 
-                // Render Text and Word Badges
                 if (!currentText.isEmpty()) {
                     Font font = getAppropriateFont();
                     g2.setFont(font);
@@ -545,14 +498,13 @@ public class DiffViewPanel extends JPanel {
 
                     String displayText = currentText.replace("\t", "    ");
 
-                    // Intra-line word highlight badges for modified lines
+                    // Intra-line word highlight badges (bold solid badges with 1px black outline)
                     if (currentRow.type() == DiffType.CHANGE) {
                         List<TextSpan> spans = isLeft ? currentRow.leftSpans() : currentRow.rightSpans();
                         if (spans != null && !spans.isEmpty()) {
                             Color badgeColor = isLeft
-                                    ? (isDarkTheme ? DARK_DELETE_BADGE : LIGHT_DELETE_BADGE)
-                                    : (isDarkTheme ? DARK_INSERT_BADGE : LIGHT_INSERT_BADGE);
-                            g2.setColor(badgeColor);
+                                    ? NeoBrutalistTheme.diffDeleteBadge()
+                                    : NeoBrutalistTheme.diffInsertBadge();
 
                             for (TextSpan span : spans) {
                                 int s = Math.min(span.start(), displayText.length());
@@ -560,22 +512,29 @@ public class DiffViewPanel extends JPanel {
                                 if (s < e) {
                                     int spanX = textX + fm.stringWidth(displayText.substring(0, s));
                                     int spanW = fm.stringWidth(displayText.substring(s, e));
-                                    g2.fillRoundRect(spanX, 3, spanW, h - 6, 4, 4);
+
+                                    // Badge fill
+                                    g2.setColor(badgeColor);
+                                    g2.fillRect(spanX, 3, spanW, h - 6);
+
+                                    // Badge 1px solid black outline
+                                    g2.setColor(Color.BLACK);
+                                    g2.setStroke(new BasicStroke(1.0f));
+                                    g2.drawRect(spanX, 3, spanW, h - 6);
                                 }
                             }
                         }
                     }
 
-                    // Text Foreground
                     Color fg;
                     if (isDiff) {
                         if (isLeft) {
-                            fg = isDarkTheme ? DARK_DELETE_TEXT : LIGHT_DELETE_TEXT;
+                            fg = NeoBrutalistTheme.diffDeleteText();
                         } else {
-                            fg = isDarkTheme ? DARK_INSERT_TEXT : LIGHT_INSERT_TEXT;
+                            fg = NeoBrutalistTheme.diffInsertText();
                         }
                     } else {
-                        fg = isDarkTheme ? DARK_TEXT : LIGHT_TEXT;
+                        fg = NeoBrutalistTheme.textPrimary();
                     }
 
                     g2.setColor(fg);
