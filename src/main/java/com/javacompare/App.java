@@ -6,8 +6,8 @@ import com.javacompare.ui.neobrutalism.NeoBrutalistTheme;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.swing.*;
-import java.awt.*;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 
 /**
  * Main application entry point for Offline Java Compare Tool - Neo-Brutalist Edition.
